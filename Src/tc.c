@@ -77,9 +77,9 @@ static void adcRead(tc_t *tcHandle)
 static void rxCAN(tc_t *tcHandle)
 {
   // Locals
-  uint8_t             data[6];                              // Data buffer for message tx
-  uint32_t            mailbox;                              // Mailbox for tx
-  CAN_TxHeaderTypeDef header;                               // CAN header frame
+  uint8_t             data[6];                                      // Data buffer for message tx
+  uint32_t            mailbox;                                      // Mailbox for tx
+  CAN_TxHeaderTypeDef header;                                       // CAN header frame
 
   // Pack data. Yeah comments for this would be scintillating. . .
   data[0] = (uint8_t) tcHandle->wheelspeed;
@@ -89,13 +89,13 @@ static void rxCAN(tc_t *tcHandle)
   data[4] = (uint8_t) tcHandle->strainAdc;
   data[5] = (uint8_t) ((tcHandle->strainAdc >> 8) & 0xf);
 
-  header.DLC = 6;                                           // Set length of data to tx
-  header.IDE = CAN_ID_STD;                                  // Set ID length to 11 bit (normal)
-  header.RTR = CAN_RTR_DATA;                                // Set frame type to data
-  header.StdId = 0x001;                                     // Set CAN ID
-  header.TransmitGlobalTime = DISABLE;                      // Don't send timestamp
+  header.DLC = 6;                                                   // Set length of data to tx
+  header.IDE = CAN_ID_STD;                                          // Set ID length to 11 bit (normal)
+  header.RTR = CAN_RTR_DATA;                                        // Set frame type to data
+  header.StdId = 0x001;                                             // Set CAN ID
+  header.TransmitGlobalTime = DISABLE;                              // Don't send timestamp
 
-  HAL_CAN_AddTxMessage(&hcan1, &header, data, &mailbox);    // Add to tx buffer
+  HAL_CAN_AddTxMessage(&hcan1, &header, data, &mailbox);            // Add to tx buffer
 }
 
 /*

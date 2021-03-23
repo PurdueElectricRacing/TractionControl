@@ -21,7 +21,7 @@ extern CAN_HandleTypeDef  hcan1;
 extern ADC_HandleTypeDef  hadc1;
 
 // Prototypes
+void tim2Setup();
 void tcLoop();
-void dwtInit();
 
 #endif

@@ -122,7 +122,15 @@ int main(void)
   MX_ADC1_Init();
   MX_TIM15_Init();
   /* USER CODE BEGIN 2 */
-  dwtInit(); // Initialize DWT
+
+  // Clear the binary counter
+  HAL_GPIO_WritePin(countclr_GPIO_Port, countclr_Pin, 1);
+  HAL_Delay(2);
+  HAL_GPIO_WritePin(countclr_GPIO_Port, countclr_Pin, 0);
+
+  // Initialize and start timer 2
+  tim2Setup();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -147,7 +155,7 @@ void SystemClock_Config(void)
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
-  /**Initializes the CPU, AHB and APB busses clocks 
+  /**Initializes the CPU, AHB and APB busses clocks
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_MSI;
   RCC_OscInitStruct.MSIState = RCC_MSI_ON;
@@ -158,7 +166,7 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  /**Initializes the CPU, AHB and APB busses clocks 
+  /**Initializes the CPU, AHB and APB busses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -184,7 +192,7 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  /**Configure the main internal regulator output voltage 
+  /**Configure the main internal regulator output voltage
   */
   if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
   {
@@ -209,7 +217,7 @@ static void MX_ADC1_Init(void)
   /* USER CODE BEGIN ADC1_Init 1 */
 
   /* USER CODE END ADC1_Init 1 */
-  /**Common config 
+  /**Common config
   */
   hadc1.Instance = ADC1;
   hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV1;
@@ -230,7 +238,7 @@ static void MX_ADC1_Init(void)
   {
     Error_Handler();
   }
-  /**Configure Regular Channel 
+  /**Configure Regular Channel
   */
   sConfig.Channel = ADC_CHANNEL_7;
   sConfig.Rank = ADC_REGULAR_RANK_1;
@@ -396,9 +404,9 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, countclr_Pin|OElowspeed_Pin|OEmedspeed_Pin|OEhighspeed_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : countbit1_Pin countbit2_Pin countbit3_Pin countbit4_Pin 
+  /*Configure GPIO pins : countbit1_Pin countbit2_Pin countbit3_Pin countbit4_Pin
                            countbit5_Pin countbit6_Pin countbit7_Pin countbit8_Pin */
-  GPIO_InitStruct.Pin = countbit1_Pin|countbit2_Pin|countbit3_Pin|countbit4_Pin 
+  GPIO_InitStruct.Pin = countbit1_Pin|countbit2_Pin|countbit3_Pin|countbit4_Pin
                           |countbit5_Pin|countbit6_Pin|countbit7_Pin|countbit8_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -465,7 +473,7 @@ void Error_Handler(void)
   * @retval None
   */
 void assert_failed(char *file, uint32_t line)
-{ 
+{
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */

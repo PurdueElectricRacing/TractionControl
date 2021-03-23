@@ -122,6 +122,7 @@ void tcLoop()
   entry = TIM7->CNT & 0xffff;                                       // Grab current timer 7 value
   timeFactor = (entry - oldEntry) / 100;                            // Compute miliseconds since last run
   timeFactor *= 60;                                                 // Finish time factor calculation
+  oldEntry = entry;                                                 // Update static copy for next loop
   bcCounts = (countbit1_GPIO_Port->IDR & (0x3FC)) >> 2;             // Gather binary counter value all in one go
   speed = (((float) bcCounts - oldCounts) / 1024) * timeFactor;     // Turn counts into rpm
   tcVals.wheelspeed = (uint16_t) speed;                             // Store calculated rpm into struct

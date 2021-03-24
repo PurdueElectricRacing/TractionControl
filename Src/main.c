@@ -127,10 +127,11 @@ int main(void)
   HAL_GPIO_WritePin(countclr_GPIO_Port, countclr_Pin, 1);
   HAL_Delay(2);
   HAL_GPIO_WritePin(countclr_GPIO_Port, countclr_Pin, 0);
+  HAL_GPIO_WritePin(OElowspeed_GPIO_Port, OElowspeed_Pin, 1);
 
   // Initialize and start timer 2
   tim2Setup();
-
+  tcLoop();
   /* USER CODE END 2 */
 
   /* Infinite loop */

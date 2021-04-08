@@ -15,7 +15,7 @@ void tim2Setup()
     // Targeting an interrupt every 2 ms
     RCC->APB1ENR1 |= RCC_APB1ENR1_TIM2EN;                           // Enable timer clock in RCC
     TIM2->PSC = 3200 - 1;                                           // Set prescalar (clock at 10000 Hz)
-    TIM2->ARR = 20;                                                 // Set auto reload value
+    TIM2->ARR = 20-1;                                                 // Set auto reload value
     TIM2->CR1 &= ~(TIM_CR1_DIR);                                    // Set to count down
     TIM2->DIER |= TIM_DIER_UIE;                                     // Enable update interrupt
     NVIC->ISER[0] |= 1 << TIM2_IRQn;                                // Unmask interrupt
@@ -30,9 +30,9 @@ void tim2Setup()
 void tim7Setup()
 {
     RCC->APB1ENR1 |= RCC_APB1ENR1_TIM7EN;                           // Enable timer clock in RCC
-    TIM7->PSC = 320;                                                // Set prescalar (clock at 16 MHz)
-    TIM7->ARR = 0xff;                                               // Set auto reload value to default (reset value, oh well)
-    TIM7->CR1 &= TIM_CR1_DIR;                                       // Set to count up
+    TIM7->PSC = 320-1;                                                // Set prescalar (clock at 16 MHz)
+    TIM7->ARR = 0xffff-1;                                               // Set auto reload value to default (reset value, oh well)
+    //TIM7->CR1 &= TIM_CR1_DIR;                                       // Set to count up
     TIM7->CR1 |= TIM_CR1_CEN;                                       // Enable the timer
 }
 
@@ -113,8 +113,8 @@ void tcLoop()
   uint16_t        entry;                                            // Current entry time
   float           speed;                                            // Wheelspeed
   float           timeFactor;                                       // Factor for converting from counts to rpm
-  static uint8_t  oldCounts;                                        // Old binary counter value
-  static uint16_t oldEntry;                                         // Entry time of last iteration
+  static uint8_t  oldCounts = 0;                                    // Old binary counter value
+  static uint16_t oldEntry = 0;                                     // Entry time of last iteration
   static tc_t     tcVals;                                           // All vars for TC/TV in one place
 
   while (1 == 1)
@@ -122,13 +122,22 @@ void tcLoop()
       while (!run);                                                     // Wait until we're told to process
       run = 0;                                                          // Stop extra processing
       entry = TIM7->CNT & 0xffff;                                       // Grab current timer 7 value
-      timeFactor = (entry - oldEntry) / 100;                            // Compute miliseconds since last run
-      timeFactor *= 60;                                                 // Finish time factor calculation
+      if(oldEntry > entry){                                         //compensate for rollover
+		  timeFactor = (float) entry + (0xffff - oldEntry);
+	  } else{
+		  timeFactor = (float) entry - oldEntry;
+	  }
+      timeFactor = (timeFactor) / 100000;                               // Compute seconds since last run
+      timeFactor /= 60;                                                 // Finish time factor calculation (minutes)
       oldEntry = entry;                                                 // Update static copy for next loop
-      bcCounts = (countbit1_GPIO_Port->IDR & (0x3FC)) >> 2;             // Gather binary counter value all in one go
-      bcCounts = bcCounts - oldCounts;                                  // Subtract off old value to get delta
+      bcCounts = (countbit1_GPIO_Port->IDR & (0x7F8)) >> 3;             // Gather binary counter value all in one go
+      if(oldCounts > bcCounts){                                         //compensate for rollover
+    	  speed = (float) bcCounts + (1024 - oldCounts);
+      } else{
+    	  speed =(float) bcCounts - oldCounts;
+      }
+      speed = ((speed) / 1024) / timeFactor;                            // Turn counts into rpm
       oldCounts = bcCounts;                                             // Update value of oldCounts
-      speed = (((float) bcCounts - oldCounts) / 1024) * timeFactor;     // Turn counts into rpm
       tcVals.wheelspeed = (uint16_t) speed;                             // Store calculated rpm into struct
 
       //adcRead(&tcVals);                                                 // Gather ADC values for strain gauges and shock pots

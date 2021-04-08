@@ -131,6 +131,7 @@ int main(void)
 
   // Initialize and start timer 2
   tim2Setup();
+  tim7Setup();
   tcLoop();
   /* USER CODE END 2 */
 
